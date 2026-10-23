@@ -44,28 +44,23 @@ pub(crate) fn gettid() -> Option<u64> {
 mod tests {
     use super::*;
 
-    /// Calls `f` on a new thread, returning its result and the thread's id per procfs.
-    ///
-    /// Not the test's own thread, since under `--test-threads=1` that is the main
-    /// thread, whose tid is also the pid.
-    fn on_new_thread(f: fn() -> Option<u64>) -> (Option<u64>, u64) {
-        std::thread::spawn(move || {
+    #[test]
+    fn gettid_returns_the_kernel_tid() {
+        // A new thread, since under `--test-threads=1` this runs on the main
+        // thread, whose tid is also the pid.
+        let (got, tid) = std::thread::spawn(|| {
             let link = std::fs::read_link("/proc/thread-self").expect("procfs is mounted");
-            let tid = link
+            let tid: u64 = link
                 .file_name()
                 .and_then(|name| name.to_str())
                 .and_then(|name| name.parse().ok())
                 .expect("/proc/thread-self ends in the tid");
 
-            (f(), tid)
+            (gettid(), tid)
         })
         .join()
-        .expect("the probe thread does not panic")
-    }
+        .expect("the probe thread does not panic");
 
-    #[test]
-    fn gettid_returns_the_kernel_tid() {
-        let (got, tid) = on_new_thread(gettid);
         assert_eq!(got, Some(tid));
     }
 }

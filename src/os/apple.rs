@@ -1,17 +1,12 @@
 //! Apple-specific OS utilities.
 #![allow(unsafe_code, reason = "need to call system utilities in os code")]
 
-#[link(name = "c")]
-unsafe extern "C" {
-    fn pthread_threadid_np(thread: usize, id: *mut u64) -> i32;
-}
-
 /// Get the current system thread id.
 #[inline]
 pub(super) fn gettid() -> u64 {
     let mut id: u64 = 0;
     // SAFETY: id is stack-allocated and guaranteed to outlast the call.
-    let res = unsafe { pthread_threadid_np(0, &mut id) };
+    let res = unsafe { libc::pthread_threadid_np(0, &mut id) };
 
     (res == 0)
         .then_some(id)
