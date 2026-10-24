@@ -18,6 +18,9 @@ tracing-core = "0.1"
 tracing-log = { version = "0.2", default-features = false, optional = true }
 tracing-subscriber = { version = "0.3", default-features = false, features = ["fmt"] }
 
+[dev-dependencies]
+tracing-log = "0.2"
+
 [features]
 default = ["tracing-log"]
 ansi_logs = ["dep:nu-ansi-term"]
