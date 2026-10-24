@@ -10,6 +10,11 @@ permissions:
   pull-requests: write
   actions: write
 
+# Every run force-pushes the same branch; queue them so one that fetched
+# older state cannot push last.
+concurrency:
+  group: upstream-sync
+
 env:
   UPSTREAM: https://github.com/EmbarkStudios/tracing-logfmt.git
   SYNC_BRANCH: chore/upstream-sync
@@ -51,12 +56,12 @@ jobs:
           # The merge commit gets a new SHA on every run, so compare trees to
           # keep the PR and its CI still until upstream or main actually moves.
           pushed=$(git rev-parse --verify -q "origin/$SYNC_BRANCH^{tree}" || true)
+          head=$(git rev-parse --verify -q "origin/$SYNC_BRANCH" || true)
           if [ "$(git rev-parse "HEAD^{tree}")" != "$pushed" ]; then
             # GITHUB_TOKEN may not push changes to .github/workflows, so this
             # is refused when upstream touched them; merge that one by hand.
             git push --force origin "$SYNC_BRANCH"
-            # Pushes made with GITHUB_TOKEN start no pull_request runs.
-            gh workflow run rust-ci.yml --ref "$SYNC_BRANCH"
+            head=$(git rev-parse HEAD)
           fi
 
           # A closed PR comes back on the next run while main still lacks
@@ -67,4 +72,11 @@ jobs:
               --body "Merges [EmbarkStudios/tracing-logfmt](https://github.com/EmbarkStudios/tracing-logfmt) main. \`.github/workflows/upstream.yml\` force-pushes this branch whenever upstream or main moves.
 
           Land it with **Create a merge commit**, not squash. A squash leaves the merge base behind, so any later edit here to lines upstream changed conflicts on every sync."
+          fi
+
+          # Pushes made with GITHUB_TOKEN start no pull_request runs. Checked
+          # per head rather than per push, so a retry after a failed dispatch
+          # still starts one.
+          if [ -z "$(gh run list --workflow rust-ci.yml --commit "$head" --json databaseId --jq '.[]')" ]; then
+            gh workflow run rust-ci.yml --ref "$SYNC_BRANCH"
           fi
