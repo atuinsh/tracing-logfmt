@@ -1,0 +1,70 @@
+name: Upstream
+
+on:
+  schedule:
+    - cron: "17 6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+  actions: write
+
+env:
+  UPSTREAM: https://github.com/EmbarkStudios/tracing-logfmt.git
+  SYNC_BRANCH: chore/upstream-sync
+
+jobs:
+  sync:
+    name: Merge upstream main
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: main
+          fetch-depth: 0
+      - name: Open or update the upstream sync PR
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch --no-tags "$UPSTREAM" main
+          upstream=$(git rev-parse --short FETCH_HEAD)
+
+          git switch -c "$SYNC_BRANCH"
+          if ! git merge --no-ff --no-edit -m "Merge EmbarkStudios/tracing-logfmt@$upstream" FETCH_HEAD; then
+            conflicts=$(git diff --name-only --diff-filter=U | xargs)
+            if git merge-base --is-ancestor FETCH_HEAD "origin/$SYNC_BRANCH" 2>/dev/null; then
+              echo "::notice::upstream $upstream conflicts with main in $conflicts, but $SYNC_BRANCH already merges it"
+              exit 0
+            fi
+            echo "::error::upstream $upstream conflicts with main in $conflicts; merge it into $SYNC_BRANCH by hand: git fetch $UPSTREAM main && git merge FETCH_HEAD"
+            exit 1
+          fi
+
+          if git diff --quiet origin/main HEAD; then
+            echo "main already has everything in upstream $upstream"
+            exit 0
+          fi
+
+          # The merge commit gets a new SHA on every run, so compare trees to
+          # keep the PR and its CI still until upstream or main actually moves.
+          pushed=$(git rev-parse --verify -q "origin/$SYNC_BRANCH^{tree}" || true)
+          if [ "$(git rev-parse "HEAD^{tree}")" != "$pushed" ]; then
+            # GITHUB_TOKEN may not push changes to .github/workflows, so this
+            # is refused when upstream touched them; merge that one by hand.
+            git push --force origin "$SYNC_BRANCH"
+            # Pushes made with GITHUB_TOKEN start no pull_request runs.
+            gh workflow run rust-ci.yml --ref "$SYNC_BRANCH"
+          fi
+
+          # A closed PR comes back on the next run while main still lacks
+          # upstream; to skip an upstream change for good, merge it -s ours.
+          if [ -z "$(gh pr list --head "$SYNC_BRANCH" --state open --json number --jq '.[]')" ]; then
+            gh pr create --head "$SYNC_BRANCH" --base main \
+              --title "chore: merge upstream main" \
+              --body "Merges [EmbarkStudios/tracing-logfmt](https://github.com/EmbarkStudios/tracing-logfmt) main. \`.github/workflows/upstream.yml\` force-pushes this branch whenever upstream or main moves.
+
+          Land it with **Create a merge commit**, not squash. A squash leaves the merge base behind, so any later edit here to lines upstream changed conflicts on every sync."
+          fi
