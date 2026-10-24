@@ -19,7 +19,7 @@
 //! can support logs coming from the `log` crate.
 //!
 //! Unlike `tracing-subscriber`, you must set your own
-//! [`LogTracer`](tracing_log::LogTracer). Do it right after setting the
+//! [`LogTracer`]. Do it right after setting the
 //! dispatcher:
 //!
 //! ```rust
@@ -41,7 +41,7 @@
 //!     .expect("a `log` logger has already been set");
 //! ```
 //!
-//! [`tracing-log`]: https://docs.rs/tracing-log
+//! [`LogTracer`]: https://docs.rs/tracing-log/0.2/tracing_log/struct.LogTracer.html
 
 #![deny(unreachable_pub)]
 

@@ -362,12 +362,10 @@ impl<'a, W> Visitor<'a, W> {
         }
     }
 
-    /// Whether to write `field`: not after a failed write, and not one of `tracing-log`'s `log.*` fields.
+    /// Whether to write `field`.
     #[inline]
     fn should_record(&self, field: &Field) -> bool {
-        // Skip fields that are actually log metadata that have already been handled
         let log_metadata = cfg!(feature = "tracing-log") && field.name().starts_with("log.");
-
         self.state.is_ok() && !log_metadata
     }
 }
