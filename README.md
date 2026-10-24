@@ -28,6 +28,8 @@ key=value otherkey="value with spaces" third="with escaped \"chars\""
 
 There is no strict standard for the format, but it was first documented in [this article](https://brandur.org/logfmt) by Brandur Leach.
 
+_Requires Rust `1.88` or higher!_
+
 ## Contribution
 
 [![Contributor Covenant](https://img.shields.io/badge/contributor%20covenant-v1.4-ff69b4.svg)](CODE_OF_CONDUCT.md)

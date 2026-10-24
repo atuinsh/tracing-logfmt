@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
+### Changed
+- Declare `rust-version = "1.88"`, the oldest toolchain that builds the locked `time`.
+
 ## [0.3.7] - 2026-01-30
 ### Fixed
 - [PR#21](https://github.com/EmbarkStudios/tracing-logfmt/pull/21) resolved [#20](https://github.com/EmbarkStudios/tracing-logfmt/issues/20) by returning 0 on unsupported platforms.
