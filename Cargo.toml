@@ -2,6 +2,7 @@
 name = "tracing-logfmt"
 version = "0.3.7"
 edition = "2021"
+rust-version = "1.88"
 authors = ["Embark <opensource@embark-studios.com>"]
 license = "MIT OR Apache-2.0"
 description = "A logfmt formatter for tracing events and spans"
@@ -11,14 +12,21 @@ keywords = ["logging", "tracing"]
 readme = "README.md"
 
 [dependencies]
+escape8259 = "0.5"
 nu-ansi-term = { version = "0.50", optional = true }
 time = { version = "0.3.7", features = ["formatting"] }
 tracing = "0.1"
 tracing-core = "0.1"
+tracing-log = { version = "0.2", default-features = false, optional = true }
 tracing-subscriber = { version = "0.3", default-features = false, features = ["fmt"] }
 
 [target.'cfg(any(target_os = "linux", target_os = "android", target_vendor = "apple"))'.dependencies]
 libc = "0.2"
 
+[dev-dependencies]
+tracing-log = "0.2"
+
 [features]
+default = ["tracing-log"]
 ansi_logs = ["dep:nu-ansi-term"]
+tracing-log = ["dep:tracing-log"]
