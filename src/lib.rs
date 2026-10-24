@@ -45,6 +45,7 @@
 #![deny(unreachable_pub)]
 
 mod formatter;
+mod os;
 mod serializer;
 
 pub use crate::formatter::builder::{builder, Builder};

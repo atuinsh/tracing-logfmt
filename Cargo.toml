@@ -20,6 +20,9 @@ tracing-core = "0.1"
 tracing-log = { version = "0.2", default-features = false, optional = true }
 tracing-subscriber = { version = "0.3", default-features = false, features = ["fmt"] }
 
+[target.'cfg(any(target_os = "linux", target_os = "android", target_vendor = "apple"))'.dependencies]
+libc = "0.2"
+
 [dev-dependencies]
 tracing-log = "0.2"
 
