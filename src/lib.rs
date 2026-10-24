@@ -15,11 +15,10 @@
 //!
 //! ## `log` records
 //!
-//! The `tracing-log` feature, which is enabled by default, `tracing-logfmt`
-//! can support logs coming from the `log` crate.
+//! With the `tracing-log` feature, which is enabled by default,
+//! `tracing-logfmt` can support logs coming from the `log` crate.
 //!
-//! Unlike `tracing-subscriber`, you must set your own
-//! [`LogTracer`]. Do it right after setting the
+//! You must set your own [`LogTracer`]. Do it right after setting the
 //! dispatcher:
 //!
 //! ```rust
