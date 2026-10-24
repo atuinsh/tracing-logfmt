@@ -12,6 +12,14 @@
 //! dispatcher::set_global_default(Dispatch::new(subscriber))
 //!     .expect("Global logger has already been set!");
 //! ```
+//!
+//! ## `log` records
+//!
+//! With the `tracing-log` feature, enabled by default, events that
+//! [`tracing-log`] bridges in from the `log` crate are written with the
+//! record's own target, location and module path, without its `log.*` fields.
+//!
+//! [`tracing-log`]: https://docs.rs/tracing-log
 
 #![deny(unreachable_pub)]
 
